@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title style="text-align: center">EDI - FINAL GROUP PROJECT</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript"> 
+ 
+ function loadData(file) {
+    $.getJSON(file, function(data) {
+  // Tworzenie elementów tabeli HTML z danych
+    let table = $('<table>');
+
+  // Tworzenie wiersza z nagłówkami kolumn
+    let tr = $('<tr>');
+    for (let key in data[0]) {
+      let th = $('<th>');
+      th.html(key);
+      tr.append(th);
+    }
+    table.append(tr);
+
+  // Dodawanie wierszy z danymi
+    $.each(data, function(index, row) {
+      let tr = $('<tr>');
+      for (let key in row) {
+        let td = $('<td>');
+        td.html(row[key]);
+        tr.append(td);
+      }
+      table.append(tr);
+    });
+
+  // Dodawanie tabeli
+    $('body').append(table);
+
+  // Przetwarzanie danych: zliczanie ilości osób, które przeżyły oraz które nie przeżyły
+    let survived = 0;
+    let notSurvived = 0;
+      $.each(data, function(index, row) {
+        if (row.czy_przeżył == "tak") {
+          survived++;
+          } else {
+            notSurvived++;
+          }
+          });
+      
+  // Twórzenie danych w formacie odpowiednim dla wykresu słupkowego
+    let chartData = {
+      labels: ['Przeżył', 'Nie przeżył'],
+      datasets: [{
+      label: 'Ilość osób',
+      data: [survived, notSurvived],
+      borderWidth: 1 ,
+      backgroundColor: ['#b399a2', '#b399a2'],
+      barThickness: 50,
+    }],
+      };
+
+  //Ustalenie opcji wykresu słupkowego
+    let chartOptions = {
+      scales: {
+      y: {
+      beginAtZero: true
+          }    
+      }};
+
+ // Twórzenie wykresu słupkowego i wyświetlanie go w elemencie o id "myChart"
+    const ctx = document.getElementById('myChart');
+    // ctx.width = 30;
+    // ctx.height = 5;      
+      new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: chartOptions
+        });
+
+
+  //Przetwarzanie danych: zliczanie ilości osób, z poszczególnych krajów       
+    let countryCount = new Map();
+      $.each(data, function(index, row) {
+        let count = 0;
+          if (countryCount.has(row.kraj_pochodzenia)) {
+          count = countryCount.get(row.kraj_pochodzenia);
+          }
+            countryCount.set(row.kraj_pochodzenia, count + 1);
+          });
+
+    console.log(countryCount.keys())
+    
+  // Tworzenie danych w formacie odpowiednim dla wykresu kołowego     
+    let pieChartData = {
+      labels: Array.from(countryCount.keys()),
+      datasets: [{
+      label: 'Ilość osób',
+      data: Array.from(countryCount.values()),
+      backgroundColor: ['#7D5D52', '#986c6a', '#b399a2', '#bfbccb','#4F646F' , '#6D8791'],
+      hoverOffset: 4, //przesunięcie łuku po najechaniu kursorem (w pikselach)
+    }]};
+
+
+  // Ustalenie opcji wykresu kołowego
+    let pieChartOptions = {
+      responsive: false,
+    };
+
+
+// Twórzenie wykresu kołowego i wyświetlanie go w elemencie o id "myPieChart"
+    const pieCtx = document.getElementById('myPieChart').getContext('2d');;    
+      new Chart(pieCtx, {
+        type: 'pie',
+        data: pieChartData,
+        options: pieChartOptions
+    });
+
+});
+  }
+</script>
+</head>
+<style>
+  body{
+    text-align: center;
+    background-color: #f1f0f0;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+  }
+  button {
+    background-color:#b399a2; 
+    color: white;
+    padding: 15px 32px;
+    border: none; 
+    border-radius: 12px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    cursor: pointer;
+    margin: auto;
+    border: 2px solid #66414e; 
+    margin: 0 auto;
+  }
+    table {
+    border-collapse: collapse;       /*sposób wyświetlania komórek (collapse-razem,separate-osobno)*/
+    text-align: center;               /*wyśrodkowany tekst*/
+    margin: auto;             
+  }
+  
+  th, td {
+    border: 1px solid black;      /*linie komórek tabeli(kolor,grubość,margines wewnetrzny)*/
+    padding: 8px;
+  }
+  
+  th {
+    background-color: #b399a2;        /*kolor tła*/
+    font-weight: bold;                     /*szerokość czcionki*/
+  }
+  
+  tr:nth-child(odd) {                       /* pseudo-klasa CSS, która pozwala na selekcję elementu*/
+    background-color: white;               /*nieparzyste komórki--białe, parzyste(even) komórki--różowe*/
+  }
+  
+  tr:nth-child(even) {
+    background-color: #b399a2;
+  }
+  h1, h2 {
+    color: #66414e
+  }
+
+  </style>
+<body>
+    <h1>LISTA OSÓB KTÓRE WALCZYŁY Z GORYLEM NA PIĘŚCI</h1>
+    <h2>Członkowie zespołu: </h2>
+    <p1>Bartłomiej Reguła<br>Zuzanna Zimmer<br>Maryana Shcherba</p1>
+    <br><br><br>
+    <button onclick="loadData('dane1.json')">Wczytaj dane z pliku 1</button>
+    <button onclick="loadData('dane2.json')">Wczytaj dane z pliku 2</button>
+    <button onclick="loadData('dane3.json')">Wczytaj dane z pliku 3</button>
+    <canvas id="myChart" style= "width: 300px; height: 100px; margin-right: 6cm; margin-left: 6cm; margin-top: 3cm;"></canvas>
+    <canvas id='myPieChart' style="margin-bottom: 3cm; margin-top: 3cm; height: 450px; width: 100%"></canvas>  
+</body>
+</html>
