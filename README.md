@@ -10,4 +10,5 @@ school project, website uses api json, creates and shows charts with data from j
   * javascript
   * jquery
   * json  
-  * api  
+  * api
+  * gstatic  
